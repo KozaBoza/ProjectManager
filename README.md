@@ -1,7 +1,7 @@
 # Automated Project Manager (Flask + React + n8n + Jira)
 ## Table of Contents
 
-- [About the Project](#about-the-project)
+- [About](#about-the-project)
 - [Features](#features)
 - [Technologies Used](#technologies-used)
 - [Project Structure](#project-structure)
@@ -12,13 +12,10 @@
   - [Running the Project](#running-the-project)
 - [Usage](#usage)
 - [Screenshots](#screenshots)
-- [Contributing](#contributing)
-- [License](#license)
-- [Contact](#contact)
 
 ---
 
-## About the Project
+## About
 
 The **Project Automation Hub** is a comprehensive solution designed to streamline project and task management for managers. It provides a user-friendly React frontend where managers can define project goals, set deadlines, and assign tasks to employees based on their roles and experience. The collected data is then processed by a Flask backend and seamlessly integrated with n8n workflows to automatically create backlogs and sprints in Jira, assigning tasks to the relevant team members with detailed descriptions.
 

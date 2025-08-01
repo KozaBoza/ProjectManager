@@ -11,7 +11,7 @@
   - [Configuration](#configuration)
   - [Running the Project](#running-the-project)
 - [Usage](#usage)
-- [Screenshots](#screenshots)
+- [Interface](#interface)
 
 ---
 
@@ -54,3 +54,8 @@ This project leverages a powerful stack of modern technologies:
     * [Docker Compose](https://docs.docker.com/compose/)
 
 ## Project Structure
+
+## Interface
+<img width="1200" height="832" alt="image" src="https://github.com/user-attachments/assets/e919a63b-a360-4163-b96e-05a7cbb58abd" />
+<img width="1176" height="695" alt="image" src="https://github.com/user-attachments/assets/54393ab0-2cc7-43d4-ba19-c39e56668719" />
+<img width="1176" height="811" alt="image" src="https://github.com/user-attachments/assets/3104623d-4a80-4f4f-832d-327ed8bb6b6d" />

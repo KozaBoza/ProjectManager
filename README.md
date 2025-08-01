@@ -35,8 +35,6 @@ This project aims to automate the tedious initial setup of project tasks in Jira
 
 ## Technologies Used
 
-This project leverages a powerful stack of modern technologies:
-
 * **Frontend:**
     * [React](https://reactjs.org/) (with TypeScript)
     * HTML5, CSS3
@@ -54,6 +52,7 @@ This project leverages a powerful stack of modern technologies:
     * [Docker Compose](https://docs.docker.com/compose/)
 
 ## Project Structure
+<img width="772" height="215" alt="image" src="https://github.com/user-attachments/assets/4c5b3541-e149-4578-bc88-f67d4db3154e" />
 
 ## Interface
 <img width="1200" height="832" alt="image" src="https://github.com/user-attachments/assets/e919a63b-a360-4163-b96e-05a7cbb58abd" />

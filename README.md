@@ -1,4 +1,4 @@
-# Automated Project Manager (Flask + React + n8n + Jira)
+#           ₊✩‧₊˚౨ৎ˚₊✩‧₊     Automated Project Manager     ₊✩‧₊˚౨ৎ˚₊✩‧₊
 ## Table of Contents
 
 - [About](#about-the-project)

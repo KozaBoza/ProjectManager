@@ -1,0 +1,290 @@
+{
+  "name": "Jira Task Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "const inputData = $json.body; \n\nif (inputData && Array.isArray(inputData.employees)) {\n  return inputData.employees.map(employee => ({\n    json: {\n      firstName: employee.firstName,\n      lastName: employee.lastName,\n      name: `${employee.firstName} ${employee.lastName}`,\n      position: employee.position,\n      experience: employee.experience,\n      id: employee.id,\n      email: employee.email || `${employee.firstName.toLowerCase()}.${employee.lastName.toLowerCase()}@company.com`\n    }\n  }));\n} else {\n  console.warn(\"No 'employees' array found in the input data or it's not an array.\");\n  return [];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        208,
+        -112
+      ],
+      "id": "f2bb297c-94eb-4332-8077-15e5b53edcb5",
+      "name": "Parse Employees"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-1.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-1.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Nazwa projektu: {{ $json.body.goals[0].name}}\nDeadline: {{ $json.body.goals[0].deadline}}\nUwagi: {{ $json.body.goals[0].notes }}\n\nWygeneruj 5-6 konkretnych zadań dla tego projektu w formacie JSON array. Każde zadanie powinno mieć pola \"summary\" i \"description\".\n\nPrzykład formatu:\n[\n  {\n    \"summary\": \"Analiza wymagań projektu\",\n    \"description\": \"Szczegółowa analiza wymagań funkcjonalnych i niefunkcjonalnych\"\n  }\n]\n\nZwróć TYLKO tablicę JSON, bez dodatkowego tekstu."
+            }
+          ]
+        },
+        "simplify": false,
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        112,
+        80
+      ],
+      "id": "3b4443aa-ad06-4f5e-b829-b92021b79c37",
+      "name": "Sprint Creator",
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "notesInFlow": true,
+      "credentials": {
+        "googlePalmApi": {
+          "id": "DMq0DJTrtLVxsgAX",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-1.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-1.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Poniżej znajduje się pełny input JSON, który otrzymałem z poprzednich kroków workflow:\n{{ JSON.stringify($json, null, 2) }}\n\nNa podstawie następujących zadań do wykonania w formacie JSON:\n{{ JSON.parse($json.candidates[0].content.parts[0].text) }}\n\nOraz listy dostępnych pracowników w formacie JSON:\n{{ JSON.stringify([{\n  \"firstName\": $json.firstName,\n  \"lastName\": $json.lastName,\n  \"name\": $json.name,\n  \"position\": $json.position,\n  \"experience\": $json.experience,\n  \"id\": $json.id,\n  \"email\": $json.email\n}], null, 2) }}\n\nPrzypisz każde zadanie do najbardziej odpowiedniego pracownika, wybierając TYLKO spośród podanych pracowników.\n\nJeśli nie ma pracownika, który pasuje do zadania, ustaw \"assigneeName\" na \"Nieprzypisany\" i \"assigneeEmail\" na null.\n\nZwróć wynik w formacie JSON jako tablicę obiektów, gdzie każdy obiekt ma dokładnie następujące pola:\n- summary: nazwa zadania\n- description: opis zadania  \n- assigneeName: imię i nazwisko przypisanego pracownika (np. \"Jan Kowalski\")\n- assigneeEmail: email przypisanego pracownika lub null\n\nOdpowiedz TYLKO z tablicą JSON, bez dodatkowego tekstu."
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        736,
+        -16
+      ],
+      "id": "281aa8ad-f42b-433e-93cd-3f6f40fbd2ce",
+      "name": "Skills Organizer",
+      "retryOnFail": true,
+      "notesInFlow": true,
+      "maxTries": 5,
+      "waitBetweenTries": 3000,
+      "credentials": {
+        "googlePalmApi": {
+          "id": "DMq0DJTrtLVxsgAX",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "\nlet assignedTasks = [];\nlet geminiResponse = null;\n\ntry {\n  if ($json.content && $json.content.parts && $json.content.parts[0]) {\n    geminiResponse = $json.content.parts[0].text;\n  } else if (Array.isArray($json)) {\n    assignedTasks = $json;\n  } else if ($json.message) {\n    geminiResponse = $json.message;\n  } else if (typeof $json === 'string') {\n    geminiResponse = $json;\n  } else {\n    assignedTasks = $json;\n  }\n  \n  if (geminiResponse && typeof geminiResponse === 'string') {\n    console.log('Raw Gemini response:', geminiResponse);\n    \n    let cleanResponse = geminiResponse.trim();\n    if (cleanResponse.startsWith('```json')) {\n      cleanResponse = cleanResponse.replace(/```json\\s*/, '').replace(/\\s*```$/, '');\n    }\n    if (cleanResponse.startsWith('```')) {\n      cleanResponse = cleanResponse.replace(/```\\s*/, '').replace(/\\s*```$/, '');\n    }\n    \n    assignedTasks = JSON.parse(cleanResponse);\n  }\n  \n} catch (error) {\n  console.error('Parse error:', error.message);\n  \n  return [{\n    json: {\n      error: `Parse error: ${error.message}`,\n      inputStructure: Object.keys($json),\n      fullInput: $json\n    }\n  }];\n}\n\nif (!Array.isArray(assignedTasks)) {\n  return [{\n    json: {\n      error: 'Response is not an array',\n      actualType: typeof assignedTasks,\n      data: assignedTasks,\n      inputKeys: Object.keys($json)\n    }\n  }];\n}\n\nconsole.log(`Successfully processed ${assignedTasks.length} tasks`);\n\nreturn assignedTasks.map((task, index) => {\n  console.log(`Processing task ${index + 1}:`, task.summary);\n  \n  return {\n    json: {\n      summary: task.summary || `Task ${index + 1}`,\n      description: task.description || \"No description provided\",\n      assigneeName: task.assigneeName || \"Nieprzypisany\",\n      assigneeEmail: task.assigneeEmail || null\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1056,
+        -16
+      ],
+      "id": "f2cbfe92-b08d-4d8c-8d9e-8378d5438f92",
+      "name": "Prepare Task Payload",
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "submit-project",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -112,
+        -16
+      ],
+      "id": "0df87d9e-1c48-439f-ab1b-213876aa9660",
+      "name": "Webhook",
+      "webhookId": "6e919d3e-ba10-4b3a-849c-1529905c2e9e"
+    },
+    {
+      "parameters": {
+        "project": {
+          "__rl": true,
+          "value": "10000",
+          "mode": "list",
+          "cachedResultName": "Project-Automation"
+        },
+        "issueType": {
+          "__rl": true,
+          "value": "10003",
+          "mode": "list",
+          "cachedResultName": "Zadanie"
+        },
+        "summary": "={{ $json.summary}}",
+        "additionalFields": {
+          "description": "={{ $json.description}}"
+        }
+      },
+      "type": "n8n-nodes-base.jira",
+      "typeVersion": 1,
+      "position": [
+        1216,
+        -32
+      ],
+      "id": "0cddc643-7e49-47d1-9442-0e4927d6df2b",
+      "name": "Create an issue",
+      "credentials": {
+        "jiraSoftwareCloudApi": {
+          "id": "T88IqPS6mPWG3Tje",
+          "name": "Jira SW Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        512,
+        0
+      ],
+      "id": "6a451051-7987-48db-a8b5-469b4f13d1ba",
+      "name": "Merge"
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "body": {
+            "employees": [
+              {
+                "firstName": "Jan",
+                "lastName": "Kowalski",
+                "position": "Developer",
+                "experience": "5 years",
+                "id": "1",
+                "email": "jan.kowalski@company.com"
+              }
+            ],
+            "goals": [
+              {
+                "name": "Project Name",
+                "deadline": "2024-12-31",
+                "notes": "Project description"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Parse Employees": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sprint Creator": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ],
+        []
+      ]
+    },
+    "Skills Organizer": {
+      "main": [
+        [
+          {
+            "node": "Prepare Task Payload",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Prepare Task Payload": {
+      "main": [
+        [
+          {
+            "node": "Create an issue",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Parse Employees",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Sprint Creator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Skills Organizer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "all",
+    "saveExecutionProgress": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "LLWBguNIII0cBaMl"
+  },
+  "versionId": "1719d92e-d159-4b26-8436-6585a2c8df46",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "fb2bd500e847f466be98f74b8aefcf310373e9e0ef74c47c756b6d8eeb2b1044"
+  },
+  "id": "LLWBguNIII0cBaMl",
+  "tags": []
+}

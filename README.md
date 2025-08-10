@@ -27,8 +27,8 @@ This project aims to automate the tedious initial setup of project tasks in Jira
 * **Project Goal Definition:** Define project names, add specific notes, and set deadlines.
 * **Dynamic Task Assignment:** Associate project goals and tasks with specific employees from the managed list.
 * **Jira Integration via n8n:**
-    * Automatically create Jira backlogs and sprints.
-    * Assign tasks to predefined employees in Jira.
+    * Automatically create Jira backlogs.
+    * Assign tasks to **predefined** employees in Jira.
     * Include detailed task descriptions derived from project notes.
 * **Intuitive User Interface:** A modern and responsive React frontend for a smooth user experience.
 * **Robust Backend:** A Flask-powered API handling data processing and communication with n8n.

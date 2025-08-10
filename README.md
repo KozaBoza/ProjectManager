@@ -58,3 +58,6 @@ This project aims to automate the tedious initial setup of project tasks in Jira
 <img width="1200" height="832" alt="image" src="https://github.com/user-attachments/assets/e919a63b-a360-4163-b96e-05a7cbb58abd" />
 <img width="1176" height="695" alt="image" src="https://github.com/user-attachments/assets/54393ab0-2cc7-43d4-ba19-c39e56668719" />
 <img width="1176" height="811" alt="image" src="https://github.com/user-attachments/assets/3104623d-4a80-4f4f-832d-327ed8bb6b6d" />
+<img width="826" height="222" alt="workflow" src="https://github.com/user-attachments/assets/fe0818e4-4cca-474e-9404-3239bd6af678" />
+<img width="1061" height="405" alt="example of backlog created" src="https://github.com/user-attachments/assets/a1e94fed-5a99-4a5a-a090-13a4f7f22edf" />
+
